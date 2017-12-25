@@ -922,26 +922,14 @@ NSString *const kGPUImageColorSwizzlingFragmentShaderString = SHADER_STRING
             bzero( &acl, sizeof(acl));
             acl.mChannelLayoutTag = kAudioChannelLayoutTag_Mono;
             
-            audioOutputSettings = [NSDictionary dictionaryWithObjectsAndKeys:
-                                         [ NSNumber numberWithInt: kAudioFormatMPEG4AAC], AVFormatIDKey,
-                                         [ NSNumber numberWithInt: 1 ], AVNumberOfChannelsKey,
-                                         [ NSNumber numberWithFloat: preferredHardwareSampleRate ], AVSampleRateKey,
-                                         [ NSData dataWithBytes: &acl length: sizeof( acl ) ], AVChannelLayoutKey,
-                                         //[ NSNumber numberWithInt:AVAudioQualityLow], AVEncoderAudioQualityKey,
-                                         [ NSNumber numberWithInt: 64000 ], AVEncoderBitRateKey,
-                                         nil];
-/*
-            AudioChannelLayout acl;
-            bzero( &acl, sizeof(acl));
-            acl.mChannelLayoutTag = kAudioChannelLayoutTag_Mono;
-            
-            audioOutputSettings = [NSDictionary dictionaryWithObjectsAndKeys:
-                                   [ NSNumber numberWithInt: kAudioFormatMPEG4AAC ], AVFormatIDKey,
-                                   [ NSNumber numberWithInt: 1 ], AVNumberOfChannelsKey,
-                                   [ NSNumber numberWithFloat: 44100.0 ], AVSampleRateKey,
-                                   [ NSNumber numberWithInt: 64000 ], AVEncoderBitRateKey,
-                                   [ NSData dataWithBytes: &acl length: sizeof( acl ) ], AVChannelLayoutKey,
-                                   nil];*/
+            audioOutputSettings = @{
+                                    AVFormatIDKey: @(kAudioFormatMPEG4AAC),
+                                    AVNumberOfChannelsKey: @(1),
+                                    AVSampleRateKey: @(preferredHardwareSampleRate), //AVSampleRateKey: @(44100.0),
+                                    AVEncoderBitRateKey: @(64000),
+                                    AVChannelLayoutKey: [NSData dataWithBytes: &acl length: sizeof( acl )],
+//                                    AVEncoderAudioQualityKey: @(AVAudioQualityLow),
+                                    };
         }
         
         assetWriterAudioInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeAudio outputSettings:audioOutputSettings];
