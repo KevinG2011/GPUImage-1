@@ -250,7 +250,7 @@ THImageMovie
 
     if ([reader startReading] == NO) 
     {
-            NSLog(@"Error reading from file at URL: %@", self.url);
+        NSLog(@"Error reading from file at URL: %@", self.url);
         return;
     }
 

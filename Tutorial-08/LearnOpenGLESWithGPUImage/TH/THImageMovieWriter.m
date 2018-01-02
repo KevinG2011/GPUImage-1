@@ -302,14 +302,13 @@ NSString *const kTHImageColorSwizzlingFragmentShaderString = SHADER_STRING
     bzero( &acl, sizeof(acl));
     acl.mChannelLayoutTag = kAudioChannelLayoutTag_Mono;
     
-    NSDictionary *audioOutputSettings = [NSDictionary dictionaryWithObjectsAndKeys:
-                                         [ NSNumber numberWithInt: kAudioFormatMPEG4AAC], AVFormatIDKey,
-                                         [ NSNumber numberWithInt: 1 ], AVNumberOfChannelsKey,
-                                         @(sampleRate), AVSampleRateKey,
-                                         [ NSData dataWithBytes: &acl length: sizeof( acl ) ], AVChannelLayoutKey,
-                                         //[ NSNumber numberWithInt:AVAudioQualityLow], AVEncoderAudioQualityKey,
-                                         [ NSNumber numberWithInt: 64000 ], AVEncoderBitRateKey,
-                                         nil];
+    NSDictionary *audioOutputSettings = @{AVFormatIDKey:@(kAudioFormatMPEG4AAC),
+                                          AVNumberOfChannelsKey:@(1),
+                                          AVSampleRateKey: @(sampleRate),
+                                          AVChannelLayoutKey:[NSData dataWithBytes:&acl length:sizeof(acl)],
+                                          AVEncoderAudioQualityKey: @(AVAudioQualityLow),
+                                          AVEncoderBitRateKey: @(64000),
+                                          };
     
     assetWriterAudioInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeAudio outputSettings:audioOutputSettings];
     [assetWriter addInput:assetWriterAudioInput];
