@@ -269,24 +269,23 @@ NSString *const kTHImageColorSwizzlingFragmentShaderString = SHADER_STRING
             }
         }
     }
-    AVMutableComposition* mixComposition = [AVMutableComposition composition];
     
+    AVMutableComposition* mixComposition = [AVMutableComposition composition];
     for(AVAssetTrack *track in audioTracks){
-        if(![track isKindOfClass:[NSNull class]]){
-            NSLog(@"track url: %@ duration: %.2f", track.asset, CMTimeGetSeconds(track.asset.duration));
-            AVMutableCompositionTrack *compositionCommentaryTrack = [mixComposition addMutableTrackWithMediaType:AVMediaTypeAudio
-                                                                     
-                                                                                                preferredTrackID:kCMPersistentTrackID_Invalid];
-            [compositionCommentaryTrack insertTimeRange:CMTimeRangeMake(kCMTimeZero, track.asset.duration)
-                                                ofTrack:track
-                                                 atTime:kCMTimeZero error:nil];
-        }
+        NSLog(@"track url: %@ duration: %.2f", track.asset, CMTimeGetSeconds(track.asset.duration));
+        AVMutableCompositionTrack *compositionTrack = nil;
+        compositionTrack = [mixComposition addMutableTrackWithMediaType:AVMediaTypeAudio
+                                                       preferredTrackID:kCMPersistentTrackID_Invalid];
+        [compositionTrack insertTimeRange:CMTimeRangeMake(kCMTimeZero, track.asset.duration)
+                                  ofTrack:track
+                                   atTime:kCMTimeZero error:nil];
     }
     
     self.assetAudioReader = [AVAssetReader assetReaderWithAsset:mixComposition error:nil];
-    self.assetAudioReaderTrackOutput =
-    [[AVAssetReaderAudioMixOutput alloc] initWithAudioTracks:[mixComposition tracksWithMediaType:AVMediaTypeAudio]
-                                               audioSettings:nil];
+    
+    NSArray *comAudioTracks = [mixComposition tracksWithMediaType:AVMediaTypeAudio];
+    self.assetAudioReaderTrackOutput = [[AVAssetReaderAudioMixOutput alloc] initWithAudioTracks:comAudioTracks
+                                                                                  audioSettings:nil];
     
     [self.assetAudioReader addOutput:self.assetAudioReaderTrackOutput];
 }
@@ -311,7 +310,9 @@ NSString *const kTHImageColorSwizzlingFragmentShaderString = SHADER_STRING
                                           };
     
     assetWriterAudioInput = [AVAssetWriterInput assetWriterInputWithMediaType:AVMediaTypeAudio outputSettings:audioOutputSettings];
-    [assetWriter addInput:assetWriterAudioInput];
+    if ([assetWriter canAddInput:assetWriterAudioInput]) {
+        [assetWriter addInput:assetWriterAudioInput];
+    }
     assetWriterAudioInput.expectsMediaDataInRealTime = _encodingLiveVideo;
 }
 
@@ -354,7 +355,6 @@ NSString *const kTHImageColorSwizzlingFragmentShaderString = SHADER_STRING
     
     
     [self kickOffAudioWriting];
-    
     [self kickOffVideoWriting];
     
     
@@ -362,8 +362,8 @@ NSString *const kTHImageColorSwizzlingFragmentShaderString = SHADER_STRING
     
     // Set up the notification that the dispatch group will send when the audio and video work have both finished.
     dispatch_group_notify(self.recordingDispatchGroup, [THImageMovieManager shared].mainSerializationQueue, ^{
-        weakSelf.videoFinished = NO;
-        weakSelf.audioFinished = NO;
+        weakSelf.videoFinished = YES;
+        weakSelf.audioFinished = YES;
         [weakSelf.assetWriter finishWritingWithCompletionHandler:^{
             if(weakSelf.completionBlock){
                 weakSelf.completionBlock();
@@ -378,7 +378,6 @@ NSString *const kTHImageColorSwizzlingFragmentShaderString = SHADER_STRING
     dispatch_group_enter(self.recordingDispatchGroup);
     __unsafe_unretained typeof(self) weakSelf = self;
     
-    
     CMTime shortestDuration = kCMTimeInvalid;
     for(THImageMovie *movie in self.movies) {
         AVAsset *asset = movie.asset;
@@ -386,7 +385,6 @@ NSString *const kTHImageColorSwizzlingFragmentShaderString = SHADER_STRING
         if(CMTIME_IS_INVALID(shortestDuration)){
             shortestDuration = asset.duration;
         }else{
-            
             if(CMTimeCompare(asset.duration, shortestDuration) == -1){
                 shortestDuration = asset.duration;
             }
@@ -394,7 +392,6 @@ NSString *const kTHImageColorSwizzlingFragmentShaderString = SHADER_STRING
     }
     
     NSLog(@"---shortest duratioN: %.2f", CMTimeGetSeconds(shortestDuration));
-    
     [assetWriterAudioInput requestMediaDataWhenReadyOnQueue:[THImageMovieManager shared].rwAudioSerializationQueue usingBlock:^{
         // 请求是同步，检查是否已经完成
         if (self.audioFinished)
@@ -448,7 +445,6 @@ NSString *const kTHImageColorSwizzlingFragmentShaderString = SHADER_STRING
 }
 
 - (void)kickOffVideoWriting {
-    
     dispatch_group_enter(self.recordingDispatchGroup);
     self.isFrameRecieved = NO;
     __unsafe_unretained typeof(self) weakSelf = self;

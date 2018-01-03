@@ -69,8 +69,8 @@
     [filter addTarget:filterView];
     [filter addTarget:_movieWriter];
     
-    [movieFile2 startProcessing];
     [movieFile startProcessing];
+    [movieFile2 startProcessing];
     [_movieWriter startRecording];
     
     CADisplayLink* dlink = [CADisplayLink displayLinkWithTarget:self selector:@selector(updateProgress)];
