@@ -305,7 +305,7 @@ NSString *const kTHImageColorSwizzlingFragmentShaderString = SHADER_STRING
                                           AVNumberOfChannelsKey:@(1),
                                           AVSampleRateKey: @(sampleRate),
                                           AVChannelLayoutKey:[NSData dataWithBytes:&acl length:sizeof(acl)],
-                                          AVEncoderAudioQualityKey: @(AVAudioQualityLow),
+//                                          AVEncoderAudioQualityKey: @(AVAudioQualityLow),
                                           AVEncoderBitRateKey: @(64000),
                                           };
     
@@ -358,15 +358,15 @@ NSString *const kTHImageColorSwizzlingFragmentShaderString = SHADER_STRING
     [self kickOffVideoWriting];
     
     
-    __unsafe_unretained typeof(self) weakSelf = self;
-    
+    __weak __typeof(self) wself = self;
+
     // Set up the notification that the dispatch group will send when the audio and video work have both finished.
     dispatch_group_notify(self.recordingDispatchGroup, [THImageMovieManager shared].mainSerializationQueue, ^{
-        weakSelf.videoFinished = YES;
-        weakSelf.audioFinished = YES;
-        [weakSelf.assetWriter finishWritingWithCompletionHandler:^{
-            if(weakSelf.completionBlock){
-                weakSelf.completionBlock();
+        wself.videoFinished = YES;
+        wself.audioFinished = YES;
+        [wself.assetWriter finishWritingWithCompletionHandler:^{
+            if(wself.completionBlock){
+                wself.completionBlock();
             }
         }];
     });
@@ -376,7 +376,7 @@ NSString *const kTHImageColorSwizzlingFragmentShaderString = SHADER_STRING
 
 - (void)kickOffAudioWriting{
     dispatch_group_enter(self.recordingDispatchGroup);
-    __unsafe_unretained typeof(self) weakSelf = self;
+    __weak __typeof(self) wself = self;
     
     CMTime shortestDuration = kCMTimeInvalid;
     for(THImageMovie *movie in self.movies) {
@@ -408,7 +408,7 @@ NSString *const kTHImageColorSwizzlingFragmentShaderString = SHADER_STRING
                 BOOL isDone = CMTimeCompare(shortestDuration, currentSampleTime) == -1;
                 
                 BOOL success = [assetWriterAudioInput appendSampleBuffer:sampleBuffer];
-                weakSelf.audioWroteDuration = CMTimeGetSeconds(currentSampleTime);
+                wself.audioWroteDuration = CMTimeGetSeconds(currentSampleTime);
                 if (success) {
                     NSLog(@"append audio buffer success");
                 } else {
@@ -422,8 +422,7 @@ NSString *const kTHImageColorSwizzlingFragmentShaderString = SHADER_STRING
                     //time out mark as finish
                     completedOrFailed = YES;
                 }
-            }
-            else {
+            } else {
                 NSLog(@"fail");
                 completedOrFailed = YES;
             }
