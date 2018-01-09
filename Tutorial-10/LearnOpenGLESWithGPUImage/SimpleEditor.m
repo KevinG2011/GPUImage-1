@@ -93,7 +93,7 @@
     
     
     NSMutableArray *instructions = [NSMutableArray array]; // 视频操作指令集合
-    NSMutableArray<AVAudioMixInputParameters *> *trackMixArray = [NSMutableArray<AVAudioMixInputParameters *> array]; // 音频轨道参数集合
+    NSMutableArray<AVAudioMixInputParameters *> *trackMixArray = [NSMutableArray array]; // 音频轨道参数集合
     
     for (i = 0; i < clipsCount; i++ ) {
         NSInteger alternatingIndex = i % 2; // 轨道索引

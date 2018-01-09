@@ -39,7 +39,7 @@
     videoCamera.horizontallyMirrorFrontFacingCamera = YES;
    
     self.mOutput = [[GPUImageRawDataOutput alloc] initWithImageSize:CGSizeMake(640, 480) resultsInBGRAFormat:YES];
-    
+
     [videoCamera addTarget:self.mOutput];
     
     
